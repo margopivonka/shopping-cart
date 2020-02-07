@@ -37,6 +37,9 @@ products = [
 # INFO CAPTURE / INPUT
 #
 
+total_price = 0
+
+
 while True:
     selected_id = input("Please input a product identifier: ")
     
@@ -47,6 +50,7 @@ while True:
         matching_products = [p for p in products if str(p["id"]) == str(selected_id)]
         #have to convert input to string so that code can match the items since ist id is an int
         matching_product = matching_products[0]
+        total_price = total_price + matching_product["price"]
         print("SELECTED PRODUCT: " + matching_product["name"] + " " + str(matching_product["price"]))
 
 
@@ -55,6 +59,11 @@ while True:
 #
 # INFO DISPLAY / OUTPUT
 #
+
+ 
+print("TOTAL PRICE: " + str(total_price)) #TODO format as USD
+
+
 
 
 
