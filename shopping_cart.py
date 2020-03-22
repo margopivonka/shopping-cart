@@ -8,7 +8,7 @@ load_dotenv()
 
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "OOPS, please set env var called 'SENDGRID_API_KEY'")
 SENDGRID_TEMPLATE_ID = os.environ.get("SENDGRID_TEMPLATE_ID", "OOPS, please set env var called 'SENDGRID_TEMPLATE_ID'")
-EMAIL_ADDRESS = os.environ..get("EMAIL_ADDRESS", "OOPS, please set env var called 'EMAIL_ADDRESS'")
+EMAIL_ADDRESS = os.environ.get("EMAIL_ADDRESS", "OOPS, please set env var called 'EMAIL_ADDRESS'")
 
 
 
@@ -129,19 +129,21 @@ elif "@" not in user_email:
 else:
     print("Now sending receipt via email...")
 
-    formatted_products = []
-    for p in selected_products:
-        formatted_product = p
-        if not isinstance(formatted_product["price"], str):
-            formatted_product["price"] = to_usd(p["price"])
-        formatted_products.append(formatted_product)
+formatted_products = []
+for p in selected_products:
+    formatted_product = p
+    if not isinstance(formatted_product["price"], str): # weird that this is necessary, only when there are duplicative selections, like 1,1 or 1,2,1 or 3,2,1,2 because when looping through and modifying a previous identical dict, it appears Python treats the next identical dict as the same object that we updated, so treating it as a copy of the first rather than its own unique object in its own right.
+        formatted_product["price"] = to_usd(p["price"])
+    formatted_products.append(formatted_product)
+
+
 
 receipt = {
     "subtotal_price_usd": to_usd(subtotal),
     "tax_price_usd": to_usd(tax),
     "total_price_usd": to_usd(total),
     "formatted_time": formatted_time,
-    "products": formatted_products
+    "products": formatted_products,
 }
 
 client = SendGridAPIClient(SENDGRID_API_KEY)
@@ -166,12 +168,3 @@ print("THANKS, SEE YOU AGAIN")
 print(divider)
 print(" ")
 
-
-# A grocery store name of your choice
-# A grocery store phone number and/or website URL and/or address of choice
-# The date and time of the beginning of the checkout process, formatted in a human-friendly way (e.g. 2019-06-06 11:31 AM)
-# The name and price of each shopping cart item, price being formatted as US dollars and cents (e.g. $1.50)
-# The total cost of all shopping cart items, formatted as US dollars and cents (e.g. $4.50), calculated as the sum of their prices
-# The amount of tax owed (e.g. $0.39), calculated by multiplying the total cost by a New York City sales tax rate of 8.75% (for the purposes of this project, groceries are not exempt from sales tax)
-# The total amount owed, formatted as US dollars and cents (e.g. $4.89), calculated by adding together the amount of tax owed plus the total cost of all shopping cart items
-# A friendly message thanking the customer and/or encouraging the customer to shop again
