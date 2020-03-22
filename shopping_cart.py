@@ -1,6 +1,23 @@
 import datetime as dt
+import os
+from dotenv import load_dotenv
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail 
 
+load_dotenv()
+
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "OOPS, please set env var called 'SENDGRID_API_KEY'")
+SENDGRID_TEMPLATE_ID = os.environ.get("SENDGRID_TEMPLATE_ID", "OOPS, please set env var called 'SENDGRID_TEMPLATE_ID'")
+EMAIL_ADDRESS = os.environ..get("EMAIL_ADDRESS", "OOPS, please set env var called 'EMAIL_ADDRESS'")
+
+
+
+
+#TODO: make tax rate variable 
 TAX_RATE = 0.06
+
+def to_usd(my_price):
+    return "${0:,.2f}".format(my_price)
 
 products = [
     {"id":1, "name": "Chocolate Sandwich Cookies", "department": "snacks", "aisle": "cookies cakes", "price": 3.50},
@@ -25,73 +42,129 @@ products = [
     {"id":20, "name": "Pomegranate Cranberry & Aloe Vera Enrich Drink", "department": "beverages", "aisle": "juice nectars", "price": 4.25}
 ] # based on data from Instacart: https://www.instacart.com/datasets/grocery-shopping-2017
 
-#print(products)
-# pprint(products)
 
-# TODO: write some Python code here to produce the desired output
 
 #
-# INFO CAPTURE / INPUT
+#TIMESTAMP AND FORMATTING
 #
-
 checkout_time = dt.datetime.now()
+formatted_time = checkout_time.strftime("%Y-%m-%d %H:%M")
+
+
+#
+#CAPTURE AND VALIDATE USER SELECTIONS
+#
 subtotal = 0
-selected_ids = []
+selected_products = []
 
 while True:
-    selected_id = input("Please input a product identifier: ")
-    if selected_id == "DONE":
+    selected_id = input("Please input a product identifier, or type 'DONE': ")
+    if selected_id.upper() == "DONE":
         break
         #break keyword will stop a loop
     else:
-        selected_ids.append(selected_id)
+        try:
+            matching_products = [p for p in products if str(p["id"]) == str(selected_id)]
+            matching_product = matching_products[0]
+            selected_products.append(matching_product)
+        except IndexError as e:
+            print("Product was not found, please try again...")
+if not selected_products:
+    print("Please select some products before continuing the process. Please try again...")
+    exit()
 
+
+#
+#CALCULATE TAX AND TOTALS
+#
+
+subtotal = sum([float(p["price"]) for p in selected_products])
+tax = subtotal * TAX_RATE
+total = subtotal + tax
+
+
+divider = "------------------"
 
 
 #
 # INFO DISPLAY / OUTPUT
 #
 
-print("----------------------")
+print(divider)
 print("MARGO'S GROCERY STORE") 
-print("----------------------")
+print(divider)
 print(" ")
 print("Web: www.margos.com")
 print("Phone: (216)-112-1357")
-print("Checkout time: " + checkout_time.strftime("%Y-%m-%d %I:%M %p"))
-print("----------------------")
+print("Checkout time: " + formatted_time)
+print(divider)
 print(" ")
-
-
-def to_usd(my_price):
-    return "${0:,.2f}".format(my_price)
-
 print("SELECTED PRODUCTS: ")
+for p in selected_products:
+        print(f"... {p['name']} {to_usd(p['price'])}")
 
-for selected_id in selected_ids:
-        matching_products = [p for p in products if str(p["id"]) == str(selected_id)]
-            #have to convert input to string so that code can match the items since ist id is an int
-        matching_product = matching_products[0]
-        subtotal = subtotal + int(matching_product["price"])
-        print(matching_product["name"] + " " + to_usd(matching_product["price"]))
-
-tax = subtotal * TAX_RATE
-
-total = subtotal + tax
-
-print("----------------------")
+print(divider)
 print(" ")
 print("SUBTOTAL: " + to_usd(subtotal))
 print("TAX: " + to_usd(tax))
 print("TOTAL: " + to_usd(total))
 
+
+
+#
+#SEND EMAIL RECEIPT
+#
+
+print("Would you like a copy of your receipt?")
+user_email = input("Please enter your email address, or type 'NO' to skip this step: ")
+
+if user_email.upper() == "Y":
+    print(f"Hello Superuser! Using your default email address {EMAIL_ADDRESS}")
+    user_email = EMAIL_ADDRESS
+
+if user_email.upper() in ["N", "NO", "N/A"]:
+    print("You have selected not to receive a copy of your receipt via email")
+elif "@" not in user_email:
+    print("Please enter a valid email address")
+else:
+    print("Now sending receipt via email...")
+
+    formatted_products = []
+    for p in selected_products:
+        formatted_product = p
+        if not isinstance(formatted_product["price"], str):
+            formatted_product["price"] = to_usd(p["price"])
+        formatted_products.append(formatted_product)
+
+receipt = {
+    "subtotal_price_usd": to_usd(subtotal),
+    "tax_price_usd": to_usd(tax),
+    "total_price_usd": to_usd(total),
+    "formatted_time": formatted_time,
+    "products": formatted_products
+}
+
+client = SendGridAPIClient(SENDGRID_API_KEY)
+
+message = Mail(from_email=user_email, to_emails=user_email)
+message.template_id = SENDGRID_TEMPLATE_ID
+message.dynamic_template_data = receipt
+
+response = client.send(message)
+
+if str(response.status_code) == "202":
+    print("Email sent successfully!")
+else:
+    print("Sorry, something went wrong...")
+    print(response.status_code)
+    print(response.body)
+
+
 print(" ")
-print("----------------------")
+print(divider)
 print("THANKS, SEE YOU AGAIN")
-print("----------------------")
+print(divider)
 print(" ")
-
-
 
 
 # A grocery store name of your choice
