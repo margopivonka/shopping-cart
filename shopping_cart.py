@@ -10,7 +10,7 @@ SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "OOPS, please set env var 
 SENDGRID_TEMPLATE_ID = os.environ.get("SENDGRID_TEMPLATE_ID", "OOPS, please set env var called 'SENDGRID_TEMPLATE_ID'")
 EMAIL_ADDRESS = os.environ.get("EMAIL_ADDRESS", "OOPS, please set env var called 'EMAIL_ADDRESS'")
 
-
+#TODO: fix email bug
 
 
 #TODO: make tax rate variable 
