@@ -82,34 +82,39 @@ subtotal = sum([float(p["price"]) for p in selected_products])
 tax = subtotal * TAX_RATE
 total = subtotal + tax
 
-
 divider = "------------------"
+
+#
+# Turn output into single function with parameter
+#
+def recepit_details(message):
+    
+    print(divider)
+    print(message)
+
 
 
 #
 # INFO DISPLAY / OUTPUT
 #
 
-print(divider)
-print("MARGO'S GROCERY STORE") 
-print(divider)
-print(" ")
-print("Web: www.margos.com")
-print("Phone: (216)-112-1357")
-print("Checkout time: " + formatted_time)
-print(divider)
-print(" ")
-print("SELECTED PRODUCTS: ")
-for p in selected_products:
-        print(f"... {p['name']} {to_usd(p['price'])}")
+recepit_details("MARGO'S GROCERY STORE")
+recepit_details("Web: www.margos.com")
+recepit_details("Phone: (216)-112-1357")
+recepit_details("Checkout time: " + formatted_time)
+recepit_details("Selected Products: ")
 
-print(divider)
+for p in selected_products:
+    print(f"... {p['name']} {to_usd(p['price'])}")
+
+
+
 print(" ")
 print("SUBTOTAL: " + to_usd(subtotal))
 print("TAX: " + to_usd(tax))
 print("TOTAL: " + to_usd(total))
 
-
+recepit_details(" ")
 
 #
 #SEND EMAIL RECEIPT
@@ -152,19 +157,17 @@ message = Mail(from_email=user_email, to_emails=user_email)
 message.template_id = SENDGRID_TEMPLATE_ID
 message.dynamic_template_data = receipt
 
-response = client.send(message)
+status_response = client.send(message)
 
-if str(response.status_code) == "202":
+if str(status_response.status_code) == "202":
     print("Email sent successfully!")
 else:
     print("Sorry, something went wrong...")
-    print(response.status_code)
-    print(response.body)
+    #print(response.status_code)
+    #print(response.body)
 
 
-print(" ")
-print(divider)
-print("THANKS, SEE YOU AGAIN")
-print(divider)
-print(" ")
+recepit_details("THANKS, SEE YOU AGAIN!")
+
+
 
