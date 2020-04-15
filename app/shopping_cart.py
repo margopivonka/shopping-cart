@@ -1,14 +1,5 @@
 import datetime as dt
 import os
-from dotenv import load_dotenv
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail 
-
-load_dotenv()
-
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "OOPS, please set env var called 'SENDGRID_API_KEY'")
-SENDGRID_TEMPLATE_ID = os.environ.get("SENDGRID_TEMPLATE_ID", "OOPS, please set env var called 'SENDGRID_TEMPLATE_ID'")
-EMAIL_ADDRESS = os.environ.get("EMAIL_ADDRESS", "OOPS, please set env var called 'EMAIL_ADDRESS'")
 
 TAX_RATE = 0.06
 
@@ -116,55 +107,3 @@ if __name__ == "__main__":
     
     
     recepit_details(" ")
-    
-         #
-        #SEND EMAIL RECEIPT
-        #
-    
-    print("Would you like a copy of your receipt?")
-    user_email = input("Please enter your email address, or type 'NO' to skip this step: ")
-    
-    if user_email.upper() == "Y":
-        print(f"Hello Superuser! Using your default email address {EMAIL_ADDRESS}")
-        user_email = EMAIL_ADDRESS
-    
-    if user_email.upper() in ["N", "NO", "N/A"]:
-        print("You have selected not to receive a copy of your receipt via email")
-    elif "@" not in user_email:
-        print("Please enter a valid email address")
-    else:
-        print("Now sending receipt via email...")
-    
-    formatted_products = []
-    for p in selected_products:
-        formatted_product = p
-        if not isinstance(formatted_product["price"], str): # weird that this is necessary, only when there are duplicative selections, like 1,1 or 1,2,1 or 3,2,1,2 because when looping through and modifying a previous identical dict, it appears Python treats the next identical dict as the same object that we updated, so treating it as a copy of the first rather than its own unique object in its own right.
-            formatted_product["price"] = to_usd(p["price"])
-        formatted_products.append(formatted_product)
-    
-    
-    
-    receipt = {
-        "subtotal_price_usd": to_usd(subtotal),
-        "tax_price_usd": to_usd(tax),
-        "total_price_usd": to_usd(total),
-        "formatted_time": human_friendly_timestamp(dt.datetime.now()),
-        "products": formatted_products,
-    }
-    
-    client = SendGridAPIClient(SENDGRID_API_KEY)
-    
-    message = Mail(from_email=user_email, to_emails=user_email)
-    message.template_id = SENDGRID_TEMPLATE_ID
-    message.dynamic_template_data = receipt
-    
-    status_response = client.send(message)
-    
-    if str(status_response.status_code) == "202":
-        print("Email sent successfully!")
-    else:
-        print("Sorry, something went wrong...")
-        #print(response.status_code)
-        #print(response.body)
-    
-    recepit_details("THANKS, SEE YOU AGAIN!")
