@@ -20,3 +20,15 @@ Run the program:
 ```py
 python shopping_cart.py
 ```
+
+## Testing
+
+Install the pytest package within your virtual environment to run tests:
+```
+pip install pytest
+```
+
+Run the tests using the following command:
+```
+pytest
+```

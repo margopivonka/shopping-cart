@@ -3,14 +3,17 @@ import os
 
 TAX_RATE = 0.06
 
+# Function to reformat price data in to user-friendly format
 def to_usd(my_price):
     return "${0:,.2f}".format(my_price)
 
+# Function to reformat timestamp to user-friendly format
 def human_friendly_timestamp(formatted_time):
     checkout_time = dt.datetime.now()
     formatted_time = checkout_time.strftime("%Y-%m-%d %H:%M")
     return formatted_time
 
+# Function to calculate total price using subtotal and tax values
 def calculate_total_price(subtotal,tax):
     total = subtotal + tax
     return total
