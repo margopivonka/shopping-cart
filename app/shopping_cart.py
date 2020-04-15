@@ -171,8 +171,8 @@ if __name__ == "__main__":
     
     
     
-=======
-products = [
+#
+#products = [
     {"id":1, "name": "Chocolate Sandwich Cookies", "department": "snacks", "aisle": "cookies cakes", "price": 3.50},
     {"id":2, "name": "All-Seasons Salt", "department": "pantry", "aisle": "spices seasonings", "price": 4.99},
     {"id":3, "name": "Robust Golden Unsweetened Oolong Tea", "department": "beverages", "aisle": "tea", "price": 2.49},
@@ -193,131 +193,132 @@ products = [
     {"id":18, "name": "Pizza for One Suprema Frozen Pizza", "department": "frozen", "aisle": "frozen pizza", "price": 12.50},
     {"id":19, "name": "Gluten Free Quinoa Three Cheese & Mushroom Blend", "department": "dry goods pasta", "aisle": "grains rice dried goods", "price": 3.99},
     {"id":20, "name": "Pomegranate Cranberry & Aloe Vera Enrich Drink", "department": "beverages", "aisle": "juice nectars", "price": 4.25}
-] # based on data from Instacart: https://www.instacart.com/datasets/grocery-shopping-2017
-
-
-
+#] # based on data from Instacart: https://www.instacart.com/datasets/grocery-shopping-2017
 #
-#TIMESTAMP AND FORMATTING
 #
-checkout_time = dt.datetime.now()
-formatted_time = checkout_time.strftime("%Y-%m-%d %H:%M")
-
-
 #
-#CAPTURE AND VALIDATE USER SELECTIONS
+##
+##TIMESTAMP AND FORMATTING
+##
+#checkout_time = dt.datetime.now()
+#formatted_time = checkout_time.strftime("%Y-%m-%d %H:%M")
 #
-subtotal = 0
-selected_products = []
-
-while True:
-    selected_id = input("Please input a product identifier, or type 'DONE': ")
-    if selected_id.upper() == "DONE":
-        break
-        #break keyword will stop a loop
-    else:
-        try:
-            matching_products = [p for p in products if str(p["id"]) == str(selected_id)]
-            matching_product = matching_products[0]
-            selected_products.append(matching_product)
-        except IndexError as e:
-            print("Product was not found, please try again...")
-if not selected_products:
-    print("Please select some products before continuing the process. Please try again...")
-    exit()
-
-
 #
-#CALCULATE TAX AND TOTALS
+##
+##CAPTURE AND VALIDATE USER SELECTIONS
+##
+#subtotal = 0
+#selected_products = []
 #
-
-subtotal = sum([float(p["price"]) for p in selected_products])
-tax = subtotal * TAX_RATE
-total = subtotal + tax
-
-divider = "------------------"
-
+#while True:
+#    selected_id = input("Please input a product identifier, or type 'DONE': ")
+#    if selected_id.upper() == "DONE":
+#        break
+#        #break keyword will stop a loop
+#    else:
+#        try:
+#            matching_products = [p for p in products if str(p["id"]) == str(selected_id)]
+#            matching_product = matching_products[0]
+#            selected_products.append(matching_product)
+#        except IndexError as e:
+#            print("Product was not found, please try again...")
+#if not selected_products:
+#    print("Please select some products before continuing the process. Please try again...")
+#    exit()
 #
-# Turn output into single function with parameter
 #
-def recepit_details(message):
-    
-    print(divider)
-    print(message)
-
-
-
+##
+##CALCULATE TAX AND TOTALS
+##
 #
-# INFO DISPLAY / OUTPUT
+#subtotal = sum([float(p["price"]) for p in selected_products])
+#tax = subtotal * TAX_RATE
+#total = subtotal + tax
 #
-
-recepit_details("MARGO'S GROCERY STORE")
-recepit_details("Web: www.margos.com")
-recepit_details("Phone: (216)-112-1357")
-recepit_details("Checkout time: " + formatted_time)
-recepit_details("Selected Products: ")
-
-for p in selected_products:
-    print(f"... {p['name']} {to_usd(p['price'])}")
-
-
-
-print(" ")
-print("SUBTOTAL: " + to_usd(subtotal))
-print("TAX: " + to_usd(tax))
-print("TOTAL: " + to_usd(total))
-
-recepit_details(" ")
-
+#divider = "------------------"
 #
-#SEND EMAIL RECEIPT
+##
+## Turn output into single function with parameter
+##
+#def recepit_details(message):
+#    
+#    print(divider)
+#    print(message)
 #
-
-print("Would you like a copy of your receipt?")
-user_email = input("Please enter your email address, or type 'NO' to skip this step: ")
-
-if user_email.upper() == "Y":
-    print(f"Hello Superuser! Using your default email address {EMAIL_ADDRESS}")
-    user_email = EMAIL_ADDRESS
-
-if user_email.upper() in ["N", "NO", "N/A"]:
-    print("You have selected not to receive a copy of your receipt via email")
-elif "@" not in user_email:
-    print("Please enter a valid email address")
-else:
-    print("Now sending receipt via email...")
-
-formatted_products = []
-for p in selected_products:
-    formatted_product = p
-    if not isinstance(formatted_product["price"], str): # weird that this is necessary, only when there are duplicative selections, like 1,1 or 1,2,1 or 3,2,1,2 because when looping through and modifying a previous identical dict, it appears Python treats the next identical dict as the same object that we updated, so treating it as a copy of the first rather than its own unique object in its own right.
-        formatted_product["price"] = to_usd(p["price"])
-    formatted_products.append(formatted_product)
-
-
-
-receipt = {
-    "subtotal_price_usd": to_usd(subtotal),
-    "tax_price_usd": to_usd(tax),
-    "total_price_usd": to_usd(total),
-    "formatted_time": formatted_time,
-    "products": formatted_products,
-}
-
-client = SendGridAPIClient(SENDGRID_API_KEY)
-
-message = Mail(from_email=user_email, to_emails=user_email)
-message.template_id = SENDGRID_TEMPLATE_ID
-message.dynamic_template_data = receipt
-
-status_response = client.send(message)
-
-if str(status_response.status_code) == "202":
-    print("Email sent successfully!")
-else:
-    print("Sorry, something went wrong...")
-    #print(response.status_code)
-    #print(response.body)
-
-recepit_details("THANKS, SEE YOU AGAIN!")
-
+#
+#
+##
+## INFO DISPLAY / OUTPUT
+##
+#
+#recepit_details("MARGO'S GROCERY STORE")
+#recepit_details("Web: www.margos.com")
+#recepit_details("Phone: (216)-112-1357")
+#recepit_details("Checkout time: " + formatted_time)
+#recepit_details("Selected Products: ")
+#
+#for p in selected_products:
+#    print(f"... {p['name']} {to_usd(p['price'])}")
+#
+#
+#
+#print(" ")
+#print("SUBTOTAL: " + to_usd(subtotal))
+#print("TAX: " + to_usd(tax))
+#print("TOTAL: " + to_usd(total))
+#
+#recepit_details(" ")
+#
+##
+##SEND EMAIL RECEIPT
+##
+#
+#print("Would you like a copy of your receipt?")
+#user_email = input("Please enter your email address, or type 'NO' to skip this step: ")
+#
+#if user_email.upper() == "Y":
+#    print(f"Hello Superuser! Using your default email address {EMAIL_ADDRESS}")
+#    user_email = EMAIL_ADDRESS
+#
+#if user_email.upper() in ["N", "NO", "N/A"]:
+#    print("You have selected not to receive a copy of your receipt via email")
+#elif "@" not in user_email:
+#    print("Please enter a valid email address")
+#else:
+#    print("Now sending receipt via email...")
+#
+#formatted_products = []
+#for p in selected_products:
+#    formatted_product = p
+#    if not isinstance(formatted_product["price"], str): # weird that this is necessary, only when there are duplicative selections, like 1,1 or 1,2,1 or 3,2,1,2 because when looping through and modifying a previous identical dict, it appears Python treats the next identical dict as the same object that we updated, so treating it as a copy of the first rather than its own unique object in its own right.
+#        formatted_product["price"] = to_usd(p["price"])
+#    formatted_products.append(formatted_product)
+#
+#
+#
+#receipt = {
+#    "subtotal_price_usd": to_usd(subtotal),
+#    "tax_price_usd": to_usd(tax),
+#    "total_price_usd": to_usd(total),
+#    "formatted_time": formatted_time,
+#    "products": formatted_products,
+#}
+#
+#client = SendGridAPIClient(SENDGRID_API_KEY)
+#
+#message = Mail(from_email=user_email, to_emails=user_email)
+#message.template_id = SENDGRID_TEMPLATE_ID
+#message.dynamic_template_data = receipt
+#
+#status_response = client.send(message)
+#
+#if str(status_response.status_code) == "202":
+#    print("Email sent successfully!")
+#else:
+#    print("Sorry, something went wrong...")
+#    #print(response.status_code)
+#    #print(response.body)
+#
+#recepit_details("THANKS, SEE YOU AGAIN!")
+#
+#
